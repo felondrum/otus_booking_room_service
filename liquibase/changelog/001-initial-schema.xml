@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.25.xsd">
+
+    <changeSet id="1" author="booking-service">
+        <createTable tableName="users">
+            <column name="id" type="uuid">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="email" type="varchar(255)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="rooms">
+            <column name="id" type="uuid">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="capacity" type="integer">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="text"/>
+        </createTable>
+
+        <createTable tableName="bookings">
+            <column name="id" type="uuid">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="room_id" type="uuid">
+                <constraints nullable="false" foreignKeyName="fk_booking_room" references="rooms(id)"/>
+            </column>
+            <column name="user_id" type="uuid">
+                <constraints nullable="false" foreignKeyName="fk_booking_user" references="users(id)"/>
+            </column>
+            <column name="start_time" type="timestamp">
+                <constraints nullable="false"/>
+            </column>
+            <column name="end_time" type="timestamp">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="timestamp">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+</databaseChangeLog> 

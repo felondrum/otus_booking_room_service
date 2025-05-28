@@ -1,0 +1,35 @@
+services:
+  postgres:
+    image: postgres:15
+    container_name: postgres-booking
+    environment:
+      POSTGRES_DB: booking
+      POSTGRES_USER: booking
+      POSTGRES_PASSWORD: booking
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U booking"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    container_name: room-booking-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      - DB_URL=jdbc:postgresql://postgres:5432/booking
+      - DB_USER=booking
+      - DB_PASSWORD=booking
+    volumes:
+      - ./src/main/resources:/app/conf
+
+volumes:
+  postgres-data:
