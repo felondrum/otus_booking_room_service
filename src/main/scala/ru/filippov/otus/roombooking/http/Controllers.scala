@@ -7,15 +7,13 @@ import io.circe.generic.auto._
 import io.circe.syntax._
 import org.http4s.circe._
 import org.http4s.dsl.io._
-import org.http4s.{HttpRoutes, Response}
+import org.http4s.HttpRoutes
 import org.http4s.circe.jsonOf
 import org.http4s.circe.jsonEncoderOf
 import java.time.LocalDateTime
 import java.util.UUID
 import org.http4s.EntityDecoder
 import org.http4s.EntityEncoder
-import cats.effect.kernel.Sync
-import cats.syntax.all._
 
 object Controllers {
   // Request models

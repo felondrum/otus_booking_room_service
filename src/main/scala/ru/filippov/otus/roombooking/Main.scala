@@ -8,7 +8,6 @@ import ru.filippov.otus.roombooking.service.{UserService, RoomService, BookingSe
 import org.http4s.ember.server.EmberServerBuilder
 import org.http4s.server.Router
 import com.comcast.ip4s.{Host, Port}
-import pureconfig._
 import pureconfig.generic.auto._
 import cats.syntax.semigroupk._
 import org.http4s.server.middleware.Logger
