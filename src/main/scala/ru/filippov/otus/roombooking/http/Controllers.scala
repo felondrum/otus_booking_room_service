@@ -23,8 +23,8 @@ object Controllers {
   case class CreateRoomRequest(name: String, capacity: Int, description: Option[String])
   case class CreateBookingRequest(roomId: String, userId: String, startTime: String, endTime: String)
   case class CheckAvailabilityRequest(roomId: String, startTime: String, endTime: String)
-  case class AvailableRoomsRequest(startTime: String, endTime: String)
-  case class AvailableRoomsByDateRequest(date: String)
+  case class AvailableRoomsRequest(startTime: String, endTime: String, capacity: Option[Int] = None)
+  case class AvailableRoomsByDateRequest(date: String, capacity: Option[Int] = None)
 
   // Response models
   case class UserResponse(id: String, name: String, email: String)
@@ -127,7 +127,7 @@ object Controllers {
           _ <- IO.println(s"Request body: $body")
           startTime = LocalDateTime.parse(body.startTime)
           endTime = LocalDateTime.parse(body.endTime)
-          rooms <- roomService.getAvailableRooms(startTime, endTime)
+          rooms <- roomService.getAvailableRooms(startTime, endTime, body.capacity)
           _ <- IO.println(s"Found available rooms: $rooms")
           response <- Ok(rooms.map(toRoomResponse).asJson)
         } yield response
@@ -137,8 +137,8 @@ object Controllers {
           _ <- IO.println("Received POST /rooms/available/date request")
           body <- req.as[AvailableRoomsByDateRequest]
           _ <- IO.println(s"Request body: $body")
-          date = LocalDateTime.parse(body.date)
-          rooms <- roomService.getAvailableRoomsByDate(date)
+          date = LocalDateTime.parse(body.date + "T00:00:00")
+          rooms <- roomService.getAvailableRoomsByDate(date, body.capacity)
           _ <- IO.println(s"Found available rooms for date: $rooms")
           response <- Ok(rooms.map(toRoomResponse).asJson)
         } yield response

@@ -75,4 +75,4 @@ object Main extends IOApp.Simple {
       connection.close()
     }
   }
-} 
+}

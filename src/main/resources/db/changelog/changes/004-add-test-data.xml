@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.25.xsd">
+
+    <!-- Добавление тестовых пользователей -->
+    <changeSet id="004-1" author="filippov">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM users WHERE email = 'ivan.petrov@example.com'
+            </sqlCheck>
+        </preConditions>
+        <insert tableName="users">
+            <column name="id" value="11111111-1111-1111-1111-111111111111"/>
+            <column name="name" value="Иван Петров"/>
+            <column name="email" value="ivan.petrov@example.com"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="004-2" author="filippov">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM users WHERE email = 'maria.smirnova@example.com'
+            </sqlCheck>
+        </preConditions>
+        <insert tableName="users">
+            <column name="id" value="22222222-2222-2222-2222-222222222222"/>
+            <column name="name" value="Мария Смирнова"/>
+            <column name="email" value="maria.smirnova@example.com"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="004-3" author="filippov">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM users WHERE email = 'alexey.ivanov@example.com'
+            </sqlCheck>
+        </preConditions>
+        <insert tableName="users">
+            <column name="id" value="33333333-3333-3333-3333-333333333333"/>
+            <column name="name" value="Алексей Иванов"/>
+            <column name="email" value="alexey.ivanov@example.com"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="004-4" author="filippov">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM users WHERE email = 'anna.kuznetsova@example.com'
+            </sqlCheck>
+        </preConditions>
+        <insert tableName="users">
+            <column name="id" value="44444444-4444-4444-4444-444444444444"/>
+            <column name="name" value="Анна Кузнецова"/>
+            <column name="email" value="anna.kuznetsova@example.com"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="004-5" author="filippov">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM users WHERE email = 'dmitry.sokolov@example.com'
+            </sqlCheck>
+        </preConditions>
+        <insert tableName="users">
+            <column name="id" value="55555555-5555-5555-5555-555555555555"/>
+            <column name="name" value="Дмитрий Соколов"/>
+            <column name="email" value="dmitry.sokolov@example.com"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="004-6" author="filippov">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM users WHERE email = 'elena.popova@example.com'
+            </sqlCheck>
+        </preConditions>
+        <insert tableName="users">
+            <column name="id" value="66666666-6666-6666-6666-666666666666"/>
+            <column name="name" value="Елена Попова"/>
+            <column name="email" value="elena.popova@example.com"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="004-7" author="filippov">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM users WHERE email = 'sergey.volkov@example.com'
+            </sqlCheck>
+        </preConditions>
+        <insert tableName="users">
+            <column name="id" value="77777777-7777-7777-7777-777777777777"/>
+            <column name="name" value="Сергей Волков"/>
+            <column name="email" value="sergey.volkov@example.com"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="004-8" author="filippov">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM users WHERE email = 'natalia.morozova@example.com'
+            </sqlCheck>
+        </preConditions>
+        <insert tableName="users">
+            <column name="id" value="88888888-8888-8888-8888-888888888888"/>
+            <column name="name" value="Наталья Морозова"/>
+            <column name="email" value="natalia.morozova@example.com"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="004-9" author="filippov">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM users WHERE email = 'pavel.kozlov@example.com'
+            </sqlCheck>
+        </preConditions>
+        <insert tableName="users">
+            <column name="id" value="99999999-9999-9999-9999-999999999999"/>
+            <column name="name" value="Павел Козлов"/>
+            <column name="email" value="pavel.kozlov@example.com"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="004-10" author="filippov">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM users WHERE email = 'olga.vasilieva@example.com'
+            </sqlCheck>
+        </preConditions>
+        <insert tableName="users">
+            <column name="id" value="aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"/>
+            <column name="name" value="Ольга Васильева"/>
+            <column name="email" value="olga.vasilieva@example.com"/>
+        </insert>
+    </changeSet>
+
+    <!-- Добавление тестовых комнат -->
+    <changeSet id="004-11" author="filippov">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM rooms WHERE name = 'Конференц-зал "Солнечный"'
+            </sqlCheck>
+        </preConditions>
+        <insert tableName="rooms">
+            <column name="id" value="bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"/>
+            <column name="name" value="Конференц-зал 'Солнечный'"/>
+            <column name="capacity" value="20"/>
+            <column name="description" value="Большой конференц-зал с проектором и видеоконференц-связью"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="004-12" author="filippov">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM rooms WHERE name = 'Переговорная "Океан"'
+            </sqlCheck>
+        </preConditions>
+        <insert tableName="rooms">
+            <column name="id" value="cccccccc-cccc-cccc-cccc-cccccccccccc"/>
+            <column name="name" value="Переговорная 'Океан'"/>
+            <column name="capacity" value="6"/>
+            <column name="description" value="Уютная переговорная комната с видом на город"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="004-13" author="filippov">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM rooms WHERE name = 'Конференц-зал "Горный"'
+            </sqlCheck>
+        </preConditions>
+        <insert tableName="rooms">
+            <column name="id" value="dddddddd-dddd-dddd-dddd-dddddddddddd"/>
+            <column name="name" value="Конференц-зал 'Горный'"/>
+            <column name="capacity" value="15"/>
+            <column name="description" value="Средний конференц-зал с интерактивной доской"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="004-14" author="filippov">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM rooms WHERE name = 'Переговорная "Лесная"'
+            </sqlCheck>
+        </preConditions>
+        <insert tableName="rooms">
+            <column name="id" value="eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee"/>
+            <column name="name" value="Переговорная 'Лесная'"/>
+            <column name="capacity" value="4"/>
+            <column name="description" value="Небольшая переговорная комната для совещаний"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="004-15" author="filippov">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM rooms WHERE name = 'Конференц-зал "Морской"'
+            </sqlCheck>
+        </preConditions>
+        <insert tableName="rooms">
+            <column name="id" value="ffffffff-ffff-ffff-ffff-ffffffffffff"/>
+            <column name="name" value="Конференц-зал 'Морской'"/>
+            <column name="capacity" value="30"/>
+            <column name="description" value="Большой конференц-зал для масштабных мероприятий"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="004-16" author="filippov">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM rooms WHERE name = 'Переговорная "Речная"'
+            </sqlCheck>
+        </preConditions>
+        <insert tableName="rooms">
+            <column name="id" value="11111111-1111-1111-1111-111111111112"/>
+            <column name="name" value="Переговорная 'Речная'"/>
+            <column name="capacity" value="8"/>
+            <column name="description" value="Переговорная комната с круглым столом"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="004-17" author="filippov">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM rooms WHERE name = 'Конференц-зал "Звездный"'
+            </sqlCheck>
+        </preConditions>
+        <insert tableName="rooms">
+            <column name="id" value="22222222-2222-2222-2222-222222222223"/>
+            <column name="name" value="Конференц-зал 'Звездный'"/>
+            <column name="capacity" value="25"/>
+            <column name="description" value="Конференц-зал с современным оборудованием"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="004-18" author="filippov">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM rooms WHERE name = 'Переговорная "Лунная"'
+            </sqlCheck>
+        </preConditions>
+        <insert tableName="rooms">
+            <column name="id" value="33333333-3333-3333-3333-333333333334"/>
+            <column name="name" value="Переговорная 'Лунная'"/>
+            <column name="capacity" value="5"/>
+            <column name="description" value="Небольшая переговорная комната с телевизором"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="004-19" author="filippov">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM rooms WHERE name = 'Конференц-зал "Полярный"'
+            </sqlCheck>
+        </preConditions>
+        <insert tableName="rooms">
+            <column name="id" value="44444444-4444-4444-4444-444444444445"/>
+            <column name="name" value="Конференц-зал 'Полярный'"/>
+            <column name="capacity" value="18"/>
+            <column name="description" value="Конференц-зал с системой видеоконференц-связи"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="004-20" author="filippov">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM rooms WHERE name = 'Переговорная "Полярная"'
+            </sqlCheck>
+        </preConditions>
+        <insert tableName="rooms">
+            <column name="id" value="55555555-5555-5555-5555-555555555556"/>
+            <column name="name" value="Переговорная 'Полярная'"/>
+            <column name="capacity" value="6"/>
+            <column name="description" value="Переговорная комната с интерактивной доской"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog> 

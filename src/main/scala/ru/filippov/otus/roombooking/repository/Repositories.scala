@@ -48,22 +48,23 @@ class RoomRepository(ctx: PostgresJdbcContext[SnakeCase]) {
     run(quote(rooms))
   }
 
-  def getAvailableRooms(startTime: LocalDateTime, endTime: LocalDateTime): IO[List[Room]] = IO {
+  def getAvailableRooms(startTime: LocalDateTime, endTime: LocalDateTime, capacity: Option[Int] = None): IO[List[Room]] = IO {
     val query = quote {
       rooms.filter(room =>
         !bookings.filter(booking =>
           booking.roomId == room.id &&
           infix"${booking.startTime} < ${lift(endTime)} AND ${booking.endTime} > ${lift(startTime)}".as[Boolean]
-        ).nonEmpty
+        ).nonEmpty &&
+        lift(capacity).forall(c => room.capacity >= c)
       )
     }
     run(query)
   }
 
-  def getAvailableRoomsByDate(date: LocalDateTime): IO[List[Room]] = {
+  def getAvailableRoomsByDate(date: LocalDateTime, capacity: Option[Int] = None): IO[List[Room]] = {
     val startOfDay = date.toLocalDate.atStartOfDay()
     val endOfDay = date.toLocalDate.plusDays(1).atStartOfDay()
-    getAvailableRooms(startOfDay, endOfDay)
+    getAvailableRooms(startOfDay, endOfDay, capacity)
   }
 }
 
