@@ -29,6 +29,7 @@ class RoomRepository(ctx: PostgresJdbcContext[SnakeCase]) {
   import ctx.{IO => _, _}
 
   private val rooms = quote(querySchema[Room]("rooms"))
+  private val bookings = quote(querySchema[Booking]("bookings"))
 
   def create(room: Room): IO[Room] = IO {
     val q = quote {
@@ -45,6 +46,24 @@ class RoomRepository(ctx: PostgresJdbcContext[SnakeCase]) {
 
   def getAll: IO[List[Room]] = IO {
     run(quote(rooms))
+  }
+
+  def getAvailableRooms(startTime: LocalDateTime, endTime: LocalDateTime): IO[List[Room]] = IO {
+    val query = quote {
+      rooms.filter(room =>
+        !bookings.filter(booking =>
+          booking.roomId == room.id &&
+          infix"${booking.startTime} < ${lift(endTime)} AND ${booking.endTime} > ${lift(startTime)}".as[Boolean]
+        ).nonEmpty
+      )
+    }
+    run(query)
+  }
+
+  def getAvailableRoomsByDate(date: LocalDateTime): IO[List[Room]] = {
+    val startOfDay = date.toLocalDate.atStartOfDay()
+    val endOfDay = date.toLocalDate.plusDays(1).atStartOfDay()
+    getAvailableRooms(startOfDay, endOfDay)
   }
 }
 
@@ -79,7 +98,7 @@ class BookingRepository(ctx: PostgresJdbcContext[SnakeCase]) {
     val conflictingBookings = run(quote(
       bookings.filter(b => 
         b.roomId == lift(roomId) &&
-        sql"${b.startTime} < ${lift(endTime)} AND ${b.endTime} > ${lift(startTime)}".as[Boolean]
+        infix"${b.startTime} < ${lift(endTime)} AND ${b.endTime} > ${lift(startTime)}".as[Boolean]
       )
     ))
     conflictingBookings.isEmpty

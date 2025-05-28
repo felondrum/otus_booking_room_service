@@ -28,6 +28,14 @@ class RoomService(roomRepository: RoomRepository) {
   def getAllRooms: IO[List[Room]] = {
     roomRepository.getAll
   }
+
+  def getAvailableRooms(startTime: LocalDateTime, endTime: LocalDateTime): IO[List[Room]] = {
+    roomRepository.getAvailableRooms(startTime, endTime)
+  }
+
+  def getAvailableRoomsByDate(date: LocalDateTime): IO[List[Room]] = {
+    roomRepository.getAvailableRoomsByDate(date)
+  }
 }
 
 class BookingService(

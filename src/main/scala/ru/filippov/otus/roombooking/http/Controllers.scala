@@ -23,6 +23,8 @@ object Controllers {
   case class CreateRoomRequest(name: String, capacity: Int, description: Option[String])
   case class CreateBookingRequest(roomId: String, userId: String, startTime: String, endTime: String)
   case class CheckAvailabilityRequest(roomId: String, startTime: String, endTime: String)
+  case class AvailableRoomsRequest(startTime: String, endTime: String)
+  case class AvailableRoomsByDateRequest(date: String)
 
   // Response models
   case class UserResponse(id: String, name: String, email: String)
@@ -42,6 +44,8 @@ object Controllers {
   implicit val createRoomDecoder: EntityDecoder[IO, CreateRoomRequest] = jsonOf[IO, CreateRoomRequest]
   implicit val createBookingDecoder: EntityDecoder[IO, CreateBookingRequest] = jsonOf[IO, CreateBookingRequest]
   implicit val checkAvailabilityDecoder: EntityDecoder[IO, CheckAvailabilityRequest] = jsonOf[IO, CheckAvailabilityRequest]
+  implicit val availableRoomsDecoder: EntityDecoder[IO, AvailableRoomsRequest] = jsonOf[IO, AvailableRoomsRequest]
+  implicit val availableRoomsByDateDecoder: EntityDecoder[IO, AvailableRoomsByDateRequest] = jsonOf[IO, AvailableRoomsByDateRequest]
 
   // Encoders
   implicit val userResponseEncoder: EntityEncoder[IO, UserResponse] = jsonEncoderOf[IO, UserResponse]
@@ -113,6 +117,29 @@ object Controllers {
           _ <- IO.println("Received GET /rooms request")
           rooms <- roomService.getAllRooms
           _ <- IO.println(s"Found rooms: $rooms")
+          response <- Ok(rooms.map(toRoomResponse).asJson)
+        } yield response
+
+      case req @ POST -> Root / "rooms" / "available" =>
+        for {
+          _ <- IO.println("Received POST /rooms/available request")
+          body <- req.as[AvailableRoomsRequest]
+          _ <- IO.println(s"Request body: $body")
+          startTime = LocalDateTime.parse(body.startTime)
+          endTime = LocalDateTime.parse(body.endTime)
+          rooms <- roomService.getAvailableRooms(startTime, endTime)
+          _ <- IO.println(s"Found available rooms: $rooms")
+          response <- Ok(rooms.map(toRoomResponse).asJson)
+        } yield response
+
+      case req @ POST -> Root / "rooms" / "available" / "date" =>
+        for {
+          _ <- IO.println("Received POST /rooms/available/date request")
+          body <- req.as[AvailableRoomsByDateRequest]
+          _ <- IO.println(s"Request body: $body")
+          date = LocalDateTime.parse(body.date)
+          rooms <- roomService.getAvailableRoomsByDate(date)
+          _ <- IO.println(s"Found available rooms for date: $rooms")
           response <- Ok(rooms.map(toRoomResponse).asJson)
         } yield response
     }
