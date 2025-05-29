@@ -2,7 +2,7 @@ package ru.filippov.otus.roombooking.http
 
 import cats.effect.IO
 import ru.filippov.otus.roombooking.model.{User, Room, Booking}
-import ru.filippov.otus.roombooking.service.{UserService, RoomService, BookingService}
+import ru.filippov.otus.roombooking.service.{UserService, RoomService, BookingService, ValidationError}
 import io.circe.generic.auto._
 import io.circe.syntax._
 import org.http4s.circe._
@@ -75,9 +75,12 @@ object Controllers {
           _ <- IO.println("Received POST /users request")
           body <- req.as[CreateUserRequest]
           _ <- IO.println(s"Request body: $body")
-          user <- userService.createUser(body.name, body.email)
-          _ <- IO.println(s"Created user: $user")
-          response <- Ok(toUserResponse(user).asJson)
+          result <- userService.createUser(body.name, body.email).attempt
+          response <- result match {
+            case Right(Right(user)) => Ok(toUserResponse(user).asJson)
+            case Right(Left(error: ValidationError)) => BadRequest(ErrorResponse(error.message).asJson)
+            case Left(error) => BadRequest(ErrorResponse(error.getMessage).asJson)
+          }
         } yield response
 
       case GET -> Root / "users" =>
@@ -97,9 +100,12 @@ object Controllers {
           _ <- IO.println("Received POST /rooms request")
           body <- req.as[CreateRoomRequest]
           _ <- IO.println(s"Request body: $body")
-          room <- roomService.createRoom(body.name, body.capacity, body.description)
-          _ <- IO.println(s"Created room: $room")
-          response <- Ok(toRoomResponse(room).asJson)
+          result <- roomService.createRoom(body.name, body.capacity, body.description).attempt
+          response <- result match {
+            case Right(Right(room)) => Ok(toRoomResponse(room).asJson)
+            case Right(Left(error: ValidationError)) => BadRequest(ErrorResponse(error.message).asJson)
+            case Left(error) => BadRequest(ErrorResponse(error.getMessage).asJson)
+          }
         } yield response
 
       case DELETE -> Root / "rooms" / UUIDVar(id) =>
@@ -125,9 +131,12 @@ object Controllers {
           _ <- IO.println(s"Request body: $body")
           startTime = LocalDateTime.parse(body.startTime)
           endTime = LocalDateTime.parse(body.endTime)
-          rooms <- roomService.getAvailableRooms(startTime, endTime, body.capacity)
-          _ <- IO.println(s"Found available rooms: $rooms")
-          response <- Ok(rooms.map(toRoomResponse).asJson)
+          result <- roomService.getAvailableRooms(startTime, endTime, body.capacity).attempt
+          response <- result match {
+            case Right(Right(rooms)) => Ok(rooms.map(toRoomResponse).asJson)
+            case Right(Left(error: ValidationError)) => BadRequest(ErrorResponse(error.message).asJson)
+            case Left(error) => BadRequest(ErrorResponse(error.getMessage).asJson)
+          }
         } yield response
 
       case req @ POST -> Root / "rooms" / "available" / "date" =>
@@ -136,9 +145,12 @@ object Controllers {
           body <- req.as[AvailableRoomsByDateRequest]
           _ <- IO.println(s"Request body: $body")
           date = LocalDateTime.parse(body.date + "T00:00:00")
-          rooms <- roomService.getAvailableRoomsByDate(date, body.capacity)
-          _ <- IO.println(s"Found available rooms for date: $rooms")
-          response <- Ok(rooms.map(toRoomResponse).asJson)
+          result <- roomService.getAvailableRoomsByDate(date, body.capacity).attempt
+          response <- result match {
+            case Right(Right(rooms)) => Ok(rooms.map(toRoomResponse).asJson)
+            case Right(Left(error: ValidationError)) => BadRequest(ErrorResponse(error.message).asJson)
+            case Left(error) => BadRequest(ErrorResponse(error.getMessage).asJson)
+          }
         } yield response
     }
   }
@@ -154,11 +166,11 @@ object Controllers {
           userId = UUID.fromString(body.userId)
           startTime = LocalDateTime.parse(body.startTime)
           endTime = LocalDateTime.parse(body.endTime)
-          bookingResult <- bookingService.createBooking(roomId, userId, startTime, endTime)
-          _ <- IO.println(s"Booking result: $bookingResult")
+          bookingResult <- bookingService.createBooking(roomId, userId, startTime, endTime).attempt
           response <- bookingResult match {
-            case Right(booking) => Ok(toBookingResponse(booking).asJson)
-            case Left(error) => BadRequest(ErrorResponse(error).asJson)
+            case Right(Right(booking)) => Ok(toBookingResponse(booking).asJson)
+            case Right(Left(error: ValidationError)) => BadRequest(ErrorResponse(error.message).asJson)
+            case Left(error) => BadRequest(ErrorResponse(error.getMessage).asJson)
           }
         } yield response
 
@@ -186,9 +198,12 @@ object Controllers {
           roomId = UUID.fromString(body.roomId)
           startTime = LocalDateTime.parse(body.startTime)
           endTime = LocalDateTime.parse(body.endTime)
-          isAvailable <- bookingService.checkAvailability(roomId, startTime, endTime)
-          _ <- IO.println(s"Room availability: $isAvailable")
-          response <- Ok(isAvailable.toString)
+          result <- bookingService.checkAvailability(roomId, startTime, endTime).attempt
+          response <- result match {
+            case Right(Right(isAvailable)) => Ok(isAvailable.toString)
+            case Right(Left(error: ValidationError)) => BadRequest(ErrorResponse(error.message).asJson)
+            case Left(error) => BadRequest(ErrorResponse(error.getMessage).asJson)
+          }
         } yield response
     }
   }
