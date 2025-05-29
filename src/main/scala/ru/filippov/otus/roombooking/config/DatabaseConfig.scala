@@ -3,8 +3,6 @@ package ru.filippov.otus.roombooking.config
 import io.getquill.{PostgresJdbcContext, SnakeCase}
 import cats.effect.{IO, Resource}
 import com.typesafe.config.ConfigFactory
-import pureconfig._
-import pureconfig.generic.auto._
 
 case class DatabaseConfig(
   url: String,

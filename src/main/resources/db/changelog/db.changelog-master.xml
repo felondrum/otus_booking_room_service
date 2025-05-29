@@ -8,4 +8,5 @@
     <include file="db/changelog/changes/001-create-users-table.xml"/>
     <include file="db/changelog/changes/002-create-rooms-table.xml"/>
     <include file="db/changelog/changes/003-create-bookings-table.xml"/>
+    <include file="db/changelog/changes/004-add-test-data.xml"/>
 </databaseChangeLog> 

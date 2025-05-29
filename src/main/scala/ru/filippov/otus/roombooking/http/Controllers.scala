@@ -7,15 +7,13 @@ import io.circe.generic.auto._
 import io.circe.syntax._
 import org.http4s.circe._
 import org.http4s.dsl.io._
-import org.http4s.{HttpRoutes, Response}
+import org.http4s.HttpRoutes
 import org.http4s.circe.jsonOf
 import org.http4s.circe.jsonEncoderOf
 import java.time.LocalDateTime
 import java.util.UUID
 import org.http4s.EntityDecoder
 import org.http4s.EntityEncoder
-import cats.effect.kernel.Sync
-import cats.syntax.all._
 
 object Controllers {
   // Request models
@@ -23,6 +21,8 @@ object Controllers {
   case class CreateRoomRequest(name: String, capacity: Int, description: Option[String])
   case class CreateBookingRequest(roomId: String, userId: String, startTime: String, endTime: String)
   case class CheckAvailabilityRequest(roomId: String, startTime: String, endTime: String)
+  case class AvailableRoomsRequest(startTime: String, endTime: String, capacity: Option[Int] = None)
+  case class AvailableRoomsByDateRequest(date: String, capacity: Option[Int] = None)
 
   // Response models
   case class UserResponse(id: String, name: String, email: String)
@@ -42,6 +42,8 @@ object Controllers {
   implicit val createRoomDecoder: EntityDecoder[IO, CreateRoomRequest] = jsonOf[IO, CreateRoomRequest]
   implicit val createBookingDecoder: EntityDecoder[IO, CreateBookingRequest] = jsonOf[IO, CreateBookingRequest]
   implicit val checkAvailabilityDecoder: EntityDecoder[IO, CheckAvailabilityRequest] = jsonOf[IO, CheckAvailabilityRequest]
+  implicit val availableRoomsDecoder: EntityDecoder[IO, AvailableRoomsRequest] = jsonOf[IO, AvailableRoomsRequest]
+  implicit val availableRoomsByDateDecoder: EntityDecoder[IO, AvailableRoomsByDateRequest] = jsonOf[IO, AvailableRoomsByDateRequest]
 
   // Encoders
   implicit val userResponseEncoder: EntityEncoder[IO, UserResponse] = jsonEncoderOf[IO, UserResponse]
@@ -113,6 +115,29 @@ object Controllers {
           _ <- IO.println("Received GET /rooms request")
           rooms <- roomService.getAllRooms
           _ <- IO.println(s"Found rooms: $rooms")
+          response <- Ok(rooms.map(toRoomResponse).asJson)
+        } yield response
+
+      case req @ POST -> Root / "rooms" / "available" =>
+        for {
+          _ <- IO.println("Received POST /rooms/available request")
+          body <- req.as[AvailableRoomsRequest]
+          _ <- IO.println(s"Request body: $body")
+          startTime = LocalDateTime.parse(body.startTime)
+          endTime = LocalDateTime.parse(body.endTime)
+          rooms <- roomService.getAvailableRooms(startTime, endTime, body.capacity)
+          _ <- IO.println(s"Found available rooms: $rooms")
+          response <- Ok(rooms.map(toRoomResponse).asJson)
+        } yield response
+
+      case req @ POST -> Root / "rooms" / "available" / "date" =>
+        for {
+          _ <- IO.println("Received POST /rooms/available/date request")
+          body <- req.as[AvailableRoomsByDateRequest]
+          _ <- IO.println(s"Request body: $body")
+          date = LocalDateTime.parse(body.date + "T00:00:00")
+          rooms <- roomService.getAvailableRoomsByDate(date, body.capacity)
+          _ <- IO.println(s"Found available rooms for date: $rooms")
           response <- Ok(rooms.map(toRoomResponse).asJson)
         } yield response
     }

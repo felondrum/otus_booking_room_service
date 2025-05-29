@@ -28,6 +28,14 @@ class RoomService(roomRepository: RoomRepository) {
   def getAllRooms: IO[List[Room]] = {
     roomRepository.getAll
   }
+
+  def getAvailableRooms(startTime: LocalDateTime, endTime: LocalDateTime, capacity: Option[Int] = None): IO[List[Room]] = {
+    roomRepository.getAvailableRooms(startTime, endTime, capacity)
+  }
+
+  def getAvailableRoomsByDate(date: LocalDateTime, capacity: Option[Int] = None): IO[List[Room]] = {
+    roomRepository.getAvailableRoomsByDate(date, capacity)
+  }
 }
 
 class BookingService(
@@ -38,12 +46,14 @@ class BookingService(
     for {
       isAvailable <- bookingRepository.isRoomAvailable(roomId, startTime, endTime)
       result <- if (isAvailable) {
-        bookingRepository.create(Booking(
+        val booking = Booking(
           roomId = roomId,
           userId = userId,
           startTime = startTime,
-          endTime = endTime
-        )).map(Right(_))
+          endTime = endTime,
+          createdAt = LocalDateTime.now()
+        )
+        bookingRepository.create(booking).map(Right(_))
       } else {
         IO.pure(Left("Room is not available for the specified time period"))
       }
