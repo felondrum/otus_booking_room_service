@@ -2,7 +2,7 @@ package ru.filippov.otus.roombooking.http
 
 import cats.effect.IO
 import ru.filippov.otus.roombooking.model.{User, Room, Booking}
-import ru.filippov.otus.roombooking.service.{UserService, RoomService, BookingService}
+import ru.filippov.otus.roombooking.service.{UserService, RoomService, BookingService, ValidationError}
 import io.circe.generic.auto._
 import io.circe.syntax._
 import org.http4s.circe._
@@ -14,29 +14,14 @@ import java.time.LocalDateTime
 import java.util.UUID
 import org.http4s.EntityDecoder
 import org.http4s.EntityEncoder
+import ru.filippov.otus.roombooking.http.{CreateUserRequest, CreateRoomRequest, CreateBookingRequest, CheckAvailabilityRequest, AvailableRoomsRequest, AvailableRoomsByDateRequest, UserResponse, RoomResponse, BookingResponse, ErrorResponse}
+import cats.syntax.semigroupk._
 
+/**
+ * Объект, содержащий HTTP-контроллеры для работы с пользователями, комнатами и бронированиями.
+ * Реализует REST API для управления ресурсами системы бронирования комнат.
+ */
 object Controllers {
-  // Request models
-  case class CreateUserRequest(name: String, email: String)
-  case class CreateRoomRequest(name: String, capacity: Int, description: Option[String])
-  case class CreateBookingRequest(roomId: String, userId: String, startTime: String, endTime: String)
-  case class CheckAvailabilityRequest(roomId: String, startTime: String, endTime: String)
-  case class AvailableRoomsRequest(startTime: String, endTime: String, capacity: Option[Int] = None)
-  case class AvailableRoomsByDateRequest(date: String, capacity: Option[Int] = None)
-
-  // Response models
-  case class UserResponse(id: String, name: String, email: String)
-  case class RoomResponse(id: String, name: String, capacity: Int, description: Option[String])
-  case class BookingResponse(
-    id: String,
-    roomId: String,
-    userId: String,
-    startTime: String,
-    endTime: String,
-    createdAt: String
-  )
-  case class ErrorResponse(message: String)
-
   // Decoders
   implicit val createUserDecoder: EntityDecoder[IO, CreateUserRequest] = jsonOf[IO, CreateUserRequest]
   implicit val createRoomDecoder: EntityDecoder[IO, CreateRoomRequest] = jsonOf[IO, CreateRoomRequest]
@@ -52,12 +37,27 @@ object Controllers {
   implicit val errorResponseEncoder: EntityEncoder[IO, ErrorResponse] = jsonEncoderOf[IO, ErrorResponse]
 
   // Converters
+  /**
+   * Преобразует модель пользователя в ответ API
+   * @param user Модель пользователя
+   * @return Ответ API с информацией о пользователе
+   */
   private def toUserResponse(user: User): UserResponse = 
     UserResponse(user.id.toString, user.name, user.email)
 
+  /**
+   * Преобразует модель комнаты в ответ API
+   * @param room Модель комнаты
+   * @return Ответ API с информацией о комнате
+   */
   private def toRoomResponse(room: Room): RoomResponse = 
     RoomResponse(room.id.toString, room.name, room.capacity, room.description)
 
+  /**
+   * Преобразует модель бронирования в ответ API
+   * @param booking Модель бронирования
+   * @return Ответ API с информацией о бронировании
+   */
   private def toBookingResponse(booking: Booking): BookingResponse = 
     BookingResponse(
       booking.id.toString,
@@ -68,18 +68,36 @@ object Controllers {
       booking.createdAt.toString
     )
 
+  /**
+   * Создает маршруты для работы с пользователями
+   * @param userService Сервис для работы с пользователями
+   * @return HTTP-маршруты для работы с пользователями
+   */
   def userRoutes(userService: UserService): HttpRoutes[IO] = {
     HttpRoutes.of[IO] {
+      /**
+       * Создает нового пользователя
+       * POST /users
+       * @return 200 OK с информацией о созданном пользователе или 400 Bad Request в случае ошибки
+       */
       case req @ POST -> Root / "users" =>
         for {
           _ <- IO.println("Received POST /users request")
           body <- req.as[CreateUserRequest]
           _ <- IO.println(s"Request body: $body")
-          user <- userService.createUser(body.name, body.email)
-          _ <- IO.println(s"Created user: $user")
-          response <- Ok(toUserResponse(user).asJson)
+          result <- userService.createUser(body.name, body.email).attempt
+          response <- result match {
+            case Right(Right(user)) => Ok(toUserResponse(user).asJson)
+            case Right(Left(error: ValidationError)) => BadRequest(ErrorResponse(error.message).asJson)
+            case Left(error) => BadRequest(ErrorResponse(error.getMessage).asJson)
+          }
         } yield response
 
+      /**
+       * Получает список всех пользователей
+       * GET /users
+       * @return 200 OK со списком пользователей
+       */
       case GET -> Root / "users" =>
         for {
           _ <- IO.println("Received GET /users request")
@@ -90,18 +108,36 @@ object Controllers {
     }
   }
 
+  /**
+   * Создает маршруты для работы с комнатами
+   * @param roomService Сервис для работы с комнатами
+   * @return HTTP-маршруты для работы с комнатами
+   */
   def roomRoutes(roomService: RoomService): HttpRoutes[IO] = {
     HttpRoutes.of[IO] {
+      /**
+       * Создает новую комнату
+       * POST /rooms
+       * @return 200 OK с информацией о созданной комнате или 400 Bad Request в случае ошибки
+       */
       case req @ POST -> Root / "rooms" =>
         for {
           _ <- IO.println("Received POST /rooms request")
           body <- req.as[CreateRoomRequest]
           _ <- IO.println(s"Request body: $body")
-          room <- roomService.createRoom(body.name, body.capacity, body.description)
-          _ <- IO.println(s"Created room: $room")
-          response <- Ok(toRoomResponse(room).asJson)
+          result <- roomService.createRoom(body.name, body.capacity, body.description).attempt
+          response <- result match {
+            case Right(Right(room)) => Ok(toRoomResponse(room).asJson)
+            case Right(Left(error: ValidationError)) => BadRequest(ErrorResponse(error.message).asJson)
+            case Left(error) => BadRequest(ErrorResponse(error.getMessage).asJson)
+          }
         } yield response
 
+      /**
+       * Удаляет комнату по ID
+       * DELETE /rooms/{id}
+       * @return 200 OK при успешном удалении
+       */
       case DELETE -> Root / "rooms" / UUIDVar(id) =>
         for {
           _ <- IO.println(s"Received DELETE /rooms/$id request")
@@ -110,6 +146,11 @@ object Controllers {
           response <- Ok()
         } yield response
 
+      /**
+       * Получает список всех комнат
+       * GET /rooms
+       * @return 200 OK со списком комнат
+       */
       case GET -> Root / "rooms" =>
         for {
           _ <- IO.println("Received GET /rooms request")
@@ -118,6 +159,11 @@ object Controllers {
           response <- Ok(rooms.map(toRoomResponse).asJson)
         } yield response
 
+      /**
+       * Получает список доступных комнат на указанный период
+       * POST /rooms/available
+       * @return 200 OK со списком доступных комнат или 400 Bad Request в случае ошибки
+       */
       case req @ POST -> Root / "rooms" / "available" =>
         for {
           _ <- IO.println("Received POST /rooms/available request")
@@ -125,26 +171,47 @@ object Controllers {
           _ <- IO.println(s"Request body: $body")
           startTime = LocalDateTime.parse(body.startTime)
           endTime = LocalDateTime.parse(body.endTime)
-          rooms <- roomService.getAvailableRooms(startTime, endTime, body.capacity)
-          _ <- IO.println(s"Found available rooms: $rooms")
-          response <- Ok(rooms.map(toRoomResponse).asJson)
+          result <- roomService.getAvailableRooms(startTime, endTime, body.capacity).attempt
+          response <- result match {
+            case Right(Right(rooms)) => Ok(rooms.map(toRoomResponse).asJson)
+            case Right(Left(error: ValidationError)) => BadRequest(ErrorResponse(error.message).asJson)
+            case Left(error) => BadRequest(ErrorResponse(error.getMessage).asJson)
+          }
         } yield response
 
+      /**
+       * Получает список доступных комнат на указанную дату
+       * POST /rooms/available/date
+       * @return 200 OK со списком доступных комнат или 400 Bad Request в случае ошибки
+       */
       case req @ POST -> Root / "rooms" / "available" / "date" =>
         for {
           _ <- IO.println("Received POST /rooms/available/date request")
           body <- req.as[AvailableRoomsByDateRequest]
           _ <- IO.println(s"Request body: $body")
           date = LocalDateTime.parse(body.date + "T00:00:00")
-          rooms <- roomService.getAvailableRoomsByDate(date, body.capacity)
-          _ <- IO.println(s"Found available rooms for date: $rooms")
-          response <- Ok(rooms.map(toRoomResponse).asJson)
+          result <- roomService.getAvailableRoomsByDate(date, body.capacity).attempt
+          response <- result match {
+            case Right(Right(rooms)) => Ok(rooms.map(toRoomResponse).asJson)
+            case Right(Left(error: ValidationError)) => BadRequest(ErrorResponse(error.message).asJson)
+            case Left(error) => BadRequest(ErrorResponse(error.getMessage).asJson)
+          }
         } yield response
     }
   }
 
+  /**
+   * Создает маршруты для работы с бронированиями
+   * @param bookingService Сервис для работы с бронированиями
+   * @return HTTP-маршруты для работы с бронированиями
+   */
   def bookingRoutes(bookingService: BookingService): HttpRoutes[IO] = {
     HttpRoutes.of[IO] {
+      /**
+       * Создает новое бронирование
+       * POST /bookings
+       * @return 200 OK с информацией о созданном бронировании или 400 Bad Request в случае ошибки
+       */
       case req @ POST -> Root / "bookings" =>
         for {
           _ <- IO.println("Received POST /bookings request")
@@ -154,14 +221,19 @@ object Controllers {
           userId = UUID.fromString(body.userId)
           startTime = LocalDateTime.parse(body.startTime)
           endTime = LocalDateTime.parse(body.endTime)
-          bookingResult <- bookingService.createBooking(roomId, userId, startTime, endTime)
-          _ <- IO.println(s"Booking result: $bookingResult")
+          bookingResult <- bookingService.createBooking(roomId, userId, startTime, endTime).attempt
           response <- bookingResult match {
-            case Right(booking) => Ok(toBookingResponse(booking).asJson)
-            case Left(error) => BadRequest(ErrorResponse(error).asJson)
+            case Right(Right(booking)) => Ok(toBookingResponse(booking).asJson)
+            case Right(Left(error: ValidationError)) => BadRequest(ErrorResponse(error.message).asJson)
+            case Left(error) => BadRequest(ErrorResponse(error.getMessage).asJson)
           }
         } yield response
 
+      /**
+       * Удаляет бронирование по ID
+       * DELETE /bookings/{id}
+       * @return 200 OK при успешном удалении
+       */
       case DELETE -> Root / "bookings" / UUIDVar(id) =>
         for {
           _ <- IO.println(s"Received DELETE /bookings/$id request")
@@ -170,6 +242,11 @@ object Controllers {
           response <- Ok()
         } yield response
 
+      /**
+       * Получает список всех бронирований
+       * GET /bookings
+       * @return 200 OK со списком бронирований
+       */
       case GET -> Root / "bookings" =>
         for {
           _ <- IO.println("Received GET /bookings request")
@@ -178,6 +255,11 @@ object Controllers {
           response <- Ok(bookings.map(toBookingResponse).asJson)
         } yield response
 
+      /**
+       * Проверяет доступность комнаты на указанный период
+       * GET /bookings/check
+       * @return 200 OK с результатом проверки (true/false) или 400 Bad Request в случае ошибки
+       */
       case req @ GET -> Root / "bookings" / "check" =>
         for {
           _ <- IO.println("Received GET /bookings/check request")
@@ -186,10 +268,30 @@ object Controllers {
           roomId = UUID.fromString(body.roomId)
           startTime = LocalDateTime.parse(body.startTime)
           endTime = LocalDateTime.parse(body.endTime)
-          isAvailable <- bookingService.checkAvailability(roomId, startTime, endTime)
-          _ <- IO.println(s"Room availability: $isAvailable")
-          response <- Ok(isAvailable.toString)
+          result <- bookingService.checkAvailability(roomId, startTime, endTime).attempt
+          response <- result match {
+            case Right(Right(isAvailable)) => Ok(isAvailable.toString)
+            case Right(Left(error: ValidationError)) => BadRequest(ErrorResponse(error.message).asJson)
+            case Left(error) => BadRequest(ErrorResponse(error.getMessage).asJson)
+          }
         } yield response
     }
+  }
+
+  /**
+   * Создает все HTTP маршруты для API.
+   * @param userService Сервис для работы с пользователями
+   * @param roomService Сервис для работы с комнатами
+   * @param bookingService Сервис для работы с бронированиями
+   * @return HttpRoutes[IO] - маршруты API
+   */
+  def createRoutes(
+    userService: UserService,
+    roomService: RoomService,
+    bookingService: BookingService
+  ): HttpRoutes[IO] = {
+    userRoutes(userService) <+>
+    roomRoutes(roomService) <+>
+    bookingRoutes(bookingService)
   }
 } 
