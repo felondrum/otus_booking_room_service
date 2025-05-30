@@ -35,11 +35,11 @@ lazy val root = (project in file("."))
       "ch.qos.logback" % "logback-classic" % logbackVersion,
       "org.scalatest" %% "scalatest" % scalaTestVersion % Test,
       "com.zaxxer" % "HikariCP" % "5.1.0",
-      "com.softwaremill.sttp.tapir" %% "tapir-core" % "1.9.7",
-      "com.softwaremill.sttp.tapir" %% "tapir-http4s-server" % "1.9.7",
-      "com.softwaremill.sttp.tapir" %% "tapir-json-circe" % "1.9.7",
+      "com.softwaremill.sttp.tapir" %% "tapir-core" % "1.9.9",
+      "com.softwaremill.sttp.tapir" %% "tapir-http4s-server" % "1.9.9",
+      "com.softwaremill.sttp.tapir" %% "tapir-json-circe" % "1.9.9",
       "com.softwaremill.sttp.tapir" %% "tapir-openapi-docs" % "1.9.7",
-      "com.softwaremill.sttp.tapir" %% "tapir-swagger-ui-bundle" % "1.9.7",
+      "com.softwaremill.sttp.tapir" %% "tapir-swagger-ui-bundle" % "1.9.9",
       "com.softwaremill.sttp.tapir" %% "tapir-cats" % "1.9.7"
     )
   )
