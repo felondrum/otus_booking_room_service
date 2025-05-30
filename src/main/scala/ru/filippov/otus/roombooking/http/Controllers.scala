@@ -256,6 +256,19 @@ object Controllers {
         } yield response
 
       /**
+       * Получает список бронирований по ID пользователя
+       * GET /bookings/user/{userId}
+       * @return 200 OK со списком бронирований пользователя
+       */
+      case GET -> Root / "bookings" / "user" / UUIDVar(userId) =>
+        for {
+          _ <- IO.println(s"Received GET /bookings/user/$userId request")
+          bookings <- bookingService.getBookingsByUserId(userId)
+          _ <- IO.println(s"Found bookings for user $userId: $bookings")
+          response <- Ok(bookings.map(toBookingResponse).asJson)
+        } yield response
+
+      /**
        * Проверяет доступность комнаты на указанный период
        * GET /bookings/check
        * @return 200 OK с результатом проверки (true/false) или 400 Bad Request в случае ошибки

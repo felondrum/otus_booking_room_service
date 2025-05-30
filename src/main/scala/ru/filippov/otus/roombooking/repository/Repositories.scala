@@ -173,4 +173,13 @@ class BookingRepository(ctx: PostgresJdbcContext[SnakeCase]) {
     ))
     conflictingBookings.isEmpty
   }
+
+  /**
+   * Получает список бронирований по ID пользователя
+   * @param userId ID пользователя
+   * @return IO[List[Booking]] - список бронирований пользователя
+   */
+  def getBookingsByUserId(userId: UUID): IO[List[Booking]] = IO {
+    run(quote(bookings.filter(_.userId == lift(userId))))
+  }
 } 

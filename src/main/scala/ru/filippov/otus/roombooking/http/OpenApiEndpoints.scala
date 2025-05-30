@@ -186,6 +186,24 @@ object OpenApiEndpoints {
     .description("Получение списка всех бронирований")
     .name("getAllBookings")
 
+  val getBookingsByUserIdEndpoint = endpoint.get
+    .in(bookingsPath / "user" / path[UUID]("userId").description("ID пользователя"))
+    .out(jsonBody[List[BookingResponse]]
+      .description("Список бронирований пользователя")
+      .example(List(
+        BookingResponse(
+          "550e8400-e29b-41d4-a716-446655440002",
+          "550e8400-e29b-41d4-a716-446655440000",
+          "550e8400-e29b-41d4-a716-446655440001",
+          "2024-03-20T10:00:00",
+          "2024-03-20T12:00:00",
+          "2024-03-19T15:30:00"
+        )
+      )))
+    .tag("Бронирования")
+    .description("Получение списка бронирований пользователя")
+    .name("getBookingsByUserId")
+
   val checkAvailabilityEndpoint = endpoint.get
     .in(bookingsPath / "check")
     .in(jsonBody[CheckAvailabilityRequest]
@@ -215,6 +233,7 @@ object OpenApiEndpoints {
     createBookingEndpoint,
     deleteBookingEndpoint,
     getAllBookingsEndpoint,
+    getBookingsByUserIdEndpoint,
     checkAvailabilityEndpoint
   )
 

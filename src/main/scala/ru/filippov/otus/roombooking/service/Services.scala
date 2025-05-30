@@ -260,4 +260,13 @@ class BookingService(
       isAvailable <- bookingRepository.isRoomAvailable(roomId, validatedTimeRange._1, validatedTimeRange._2).map(Right(_))
     } yield isAvailable
   }
+
+  /**
+   * Получает список бронирований по ID пользователя
+   * @param userId ID пользователя
+   * @return IO[List[Booking]] - список бронирований пользователя
+   */
+  def getBookingsByUserId(userId: UUID): IO[List[Booking]] = {
+    bookingRepository.getBookingsByUserId(userId)
+  }
 } 
