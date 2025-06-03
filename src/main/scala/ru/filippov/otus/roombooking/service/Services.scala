@@ -5,7 +5,6 @@ import ru.filippov.otus.roombooking.model.{User, Room, Booking}
 import ru.filippov.otus.roombooking.repository.{UserRepository, RoomRepository, BookingRepository}
 import java.time.LocalDateTime
 import java.util.UUID
-import cats.syntax.either._
 
 /**
  * Ошибка валидации данных

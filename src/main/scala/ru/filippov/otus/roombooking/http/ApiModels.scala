@@ -1,7 +1,5 @@
 package ru.filippov.otus.roombooking.http
 
-import java.util.UUID
-
 /**
  * Запрос на создание нового пользователя
  * @param name Имя пользователя

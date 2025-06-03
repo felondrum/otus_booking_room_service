@@ -14,7 +14,6 @@ import java.time.LocalDateTime
 import java.util.UUID
 import org.http4s.EntityDecoder
 import org.http4s.EntityEncoder
-import ru.filippov.otus.roombooking.http.{CreateUserRequest, CreateRoomRequest, CreateBookingRequest, CheckAvailabilityRequest, AvailableRoomsRequest, AvailableRoomsByDateRequest, UserResponse, RoomResponse, BookingResponse, ErrorResponse}
 import cats.syntax.semigroupk._
 
 /**
@@ -109,7 +108,7 @@ object Controllers {
   }
 
   /**
-   * Создает маршруты для работы с комнатами
+   * Создает роуты для работы с комнатами
    * @param roomService Сервис для работы с комнатами
    * @return HTTP-маршруты для работы с комнатами
    */
@@ -201,7 +200,7 @@ object Controllers {
   }
 
   /**
-   * Создает маршруты для работы с бронированиями
+   * Создает роуты для работы с бронированиями
    * @param bookingService Сервис для работы с бронированиями
    * @return HTTP-маршруты для работы с бронированиями
    */
@@ -292,7 +291,7 @@ object Controllers {
   }
 
   /**
-   * Создает все HTTP маршруты для API.
+   * Создает все HTTP роуты для API.
    * @param userService Сервис для работы с пользователями
    * @param roomService Сервис для работы с комнатами
    * @param bookingService Сервис для работы с бронированиями

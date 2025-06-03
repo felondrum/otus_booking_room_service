@@ -1,6 +1,6 @@
 package ru.filippov.otus.roombooking
 
-import cats.effect.{IO, IOApp, Resource}
+import cats.effect.{IO, IOApp}
 import cats.effect.unsafe.implicits.global
 import ru.filippov.otus.roombooking.config.DatabaseConfig
 import ru.filippov.otus.roombooking.repository.{UserRepository, RoomRepository, BookingRepository}
@@ -10,11 +10,9 @@ import ru.filippov.otus.roombooking.http.OpenApiEndpoints
 import org.http4s.ember.server.EmberServerBuilder
 import com.comcast.ip4s.{Host, Port}
 import org.http4s.server.Router
-import org.http4s.server.staticcontent._
 import org.http4s.server.middleware.{CORS, Logger}
-import org.http4s.{HttpApp, HttpRoutes}
+import org.http4s.HttpApp
 import sttp.tapir.server.http4s.Http4sServerInterpreter
-import cats.syntax.semigroupk._
 import liquibase.Liquibase
 import liquibase.database.DatabaseFactory
 import liquibase.database.jvm.JdbcConnection
@@ -48,7 +46,7 @@ object Main extends IOApp.Simple {
       val roomService = new RoomService(roomRepository)
       val bookingService = new BookingService(bookingRepository, roomRepository)
 
-      // Создаем HTTP маршруты
+      // Создаем HTTP роуты
       val apiRoutes = Controllers.createRoutes(userService, roomService, bookingService)
       val swaggerRoutes = Http4sServerInterpreter[IO]().toRoutes(OpenApiEndpoints.swaggerEndpoints)
       val routes = Router(

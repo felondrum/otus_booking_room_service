@@ -5,7 +5,6 @@ import sttp.tapir.generic.auto._
 import sttp.tapir.json.circe._
 import sttp.tapir.swagger.bundle.SwaggerInterpreter
 import io.circe.generic.auto._
-import ru.filippov.otus.roombooking.model.{User, Room, Booking}
 import java.util.UUID
 import cats.effect.IO
 import sttp.model.StatusCode
