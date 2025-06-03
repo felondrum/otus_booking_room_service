@@ -2,7 +2,7 @@ package ru.filippov.otus.roombooking
 
 import cats.effect.{IO, IOApp}
 import cats.effect.unsafe.implicits.global
-import ru.filippov.otus.roombooking.config.DatabaseConfig
+import ru.filippov.otus.roombooking.config.{DatabaseConfig, AppConfig}
 import ru.filippov.otus.roombooking.repository.{UserRepository, RoomRepository, BookingRepository}
 import ru.filippov.otus.roombooking.service.{UserService, RoomService, BookingService}
 import ru.filippov.otus.roombooking.http.Controllers
@@ -54,14 +54,17 @@ object Main extends IOApp.Simple {
         "/" -> swaggerRoutes
       )
 
+      // Получаем конфигурацию сервера
+      val serverConfig = AppConfig.load()
+
       // Создаем HTTP приложение с CORS и логированием
       val httpApp: HttpApp[IO] = CORS(Logger.httpApp(true, true)(routes.orNotFound))
 
       // Запускаем сервер
       EmberServerBuilder
         .default[IO]
-        .withHost(Host.fromString("0.0.0.0").get)
-        .withPort(Port.fromInt(8080).get)
+        .withHost(Host.fromString(serverConfig.host).get)
+        .withPort(Port.fromInt(serverConfig.port).get)
         .withHttpApp(httpApp)
         .build
         .use(_ => IO.never)
