@@ -33,6 +33,7 @@ lazy val root = (project in file("."))
       "com.github.pureconfig" %% "pureconfig" % "0.17.6",
       "com.typesafe" % "config" % "1.4.3",
       "ch.qos.logback" % "logback-classic" % logbackVersion,
+      "org.typelevel" %% "log4cats-slf4j" % "2.6.0",
       "org.scalatest" %% "scalatest" % scalaTestVersion % Test,
       "com.zaxxer" % "HikariCP" % "5.1.0",
       "com.softwaremill.sttp.tapir" %% "tapir-core" % "1.9.9",

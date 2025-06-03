@@ -15,12 +15,16 @@ import java.util.UUID
 import org.http4s.EntityDecoder
 import org.http4s.EntityEncoder
 import cats.syntax.semigroupk._
+import org.typelevel.log4cats.Logger
+import org.typelevel.log4cats.slf4j.Slf4jLogger
 
 /**
  * Объект, содержащий HTTP-контроллеры для работы с пользователями, комнатами и бронированиями.
  * Реализует REST API для управления ресурсами системы бронирования комнат.
  */
 object Controllers {
+  private implicit val logger: Logger[IO] = Slf4jLogger.getLogger[IO]
+
   // Decoders
   implicit val createUserDecoder: EntityDecoder[IO, CreateUserRequest] = jsonOf[IO, CreateUserRequest]
   implicit val createRoomDecoder: EntityDecoder[IO, CreateRoomRequest] = jsonOf[IO, CreateRoomRequest]
@@ -81,9 +85,9 @@ object Controllers {
        */
       case req @ POST -> Root / "users" =>
         for {
-          _ <- IO.println("Received POST /users request")
+          _ <- logger.info("Received POST /users request")
           body <- req.as[CreateUserRequest]
-          _ <- IO.println(s"Request body: $body")
+          _ <- logger.info(s"Request body: $body")
           result <- userService.createUser(body.name, body.email).attempt
           response <- result match {
             case Right(Right(user)) => Ok(toUserResponse(user).asJson)
@@ -99,9 +103,9 @@ object Controllers {
        */
       case GET -> Root / "users" =>
         for {
-          _ <- IO.println("Received GET /users request")
+          _ <- logger.info("Received GET /users request")
           users <- userService.getAllUsers
-          _ <- IO.println(s"Found users: $users")
+          _ <- logger.info(s"Found users: $users")
           response <- Ok(users.map(toUserResponse).asJson)
         } yield response
     }
@@ -121,9 +125,9 @@ object Controllers {
        */
       case req @ POST -> Root / "rooms" =>
         for {
-          _ <- IO.println("Received POST /rooms request")
+          _ <- logger.info("Received POST /rooms request")
           body <- req.as[CreateRoomRequest]
-          _ <- IO.println(s"Request body: $body")
+          _ <- logger.info(s"Request body: $body")
           result <- roomService.createRoom(body.name, body.capacity, body.description).attempt
           response <- result match {
             case Right(Right(room)) => Ok(toRoomResponse(room).asJson)
@@ -139,9 +143,9 @@ object Controllers {
        */
       case DELETE -> Root / "rooms" / UUIDVar(id) =>
         for {
-          _ <- IO.println(s"Received DELETE /rooms/$id request")
+          _ <- logger.info(s"Received DELETE /rooms/$id request")
           _ <- roomService.deleteRoom(id)
-          _ <- IO.println(s"Deleted room: $id")
+          _ <- logger.info(s"Deleted room: $id")
           response <- Ok()
         } yield response
 
@@ -152,9 +156,9 @@ object Controllers {
        */
       case GET -> Root / "rooms" =>
         for {
-          _ <- IO.println("Received GET /rooms request")
+          _ <- logger.info("Received GET /rooms request")
           rooms <- roomService.getAllRooms
-          _ <- IO.println(s"Found rooms: $rooms")
+          _ <- logger.info(s"Found rooms: $rooms")
           response <- Ok(rooms.map(toRoomResponse).asJson)
         } yield response
 
@@ -165,9 +169,9 @@ object Controllers {
        */
       case req @ POST -> Root / "rooms" / "available" =>
         for {
-          _ <- IO.println("Received POST /rooms/available request")
+          _ <- logger.info("Received POST /rooms/available request")
           body <- req.as[AvailableRoomsRequest]
-          _ <- IO.println(s"Request body: $body")
+          _ <- logger.info(s"Request body: $body")
           startTime = LocalDateTime.parse(body.startTime)
           endTime = LocalDateTime.parse(body.endTime)
           result <- roomService.getAvailableRooms(startTime, endTime, body.capacity).attempt
@@ -185,9 +189,9 @@ object Controllers {
        */
       case req @ POST -> Root / "rooms" / "available" / "date" =>
         for {
-          _ <- IO.println("Received POST /rooms/available/date request")
+          _ <- logger.info("Received POST /rooms/available/date request")
           body <- req.as[AvailableRoomsByDateRequest]
-          _ <- IO.println(s"Request body: $body")
+          _ <- logger.info(s"Request body: $body")
           date = LocalDateTime.parse(body.date + "T00:00:00")
           result <- roomService.getAvailableRoomsByDate(date, body.capacity).attempt
           response <- result match {
@@ -213,9 +217,9 @@ object Controllers {
        */
       case req @ POST -> Root / "bookings" =>
         for {
-          _ <- IO.println("Received POST /bookings request")
+          _ <- logger.info("Received POST /bookings request")
           body <- req.as[CreateBookingRequest]
-          _ <- IO.println(s"Request body: $body")
+          _ <- logger.info(s"Request body: $body")
           roomId = UUID.fromString(body.roomId)
           userId = UUID.fromString(body.userId)
           startTime = LocalDateTime.parse(body.startTime)
@@ -235,9 +239,9 @@ object Controllers {
        */
       case DELETE -> Root / "bookings" / UUIDVar(id) =>
         for {
-          _ <- IO.println(s"Received DELETE /bookings/$id request")
+          _ <- logger.info(s"Received DELETE /bookings/$id request")
           _ <- bookingService.deleteBooking(id)
-          _ <- IO.println(s"Deleted booking: $id")
+          _ <- logger.info(s"Deleted booking: $id")
           response <- Ok()
         } yield response
 
@@ -248,9 +252,9 @@ object Controllers {
        */
       case GET -> Root / "bookings" =>
         for {
-          _ <- IO.println("Received GET /bookings request")
+          _ <- logger.info("Received GET /bookings request")
           bookings <- bookingService.getAllBookings
-          _ <- IO.println(s"Found bookings: $bookings")
+          _ <- logger.info(s"Found bookings: $bookings")
           response <- Ok(bookings.map(toBookingResponse).asJson)
         } yield response
 
@@ -261,9 +265,9 @@ object Controllers {
        */
       case GET -> Root / "bookings" / "user" / UUIDVar(userId) =>
         for {
-          _ <- IO.println(s"Received GET /bookings/user/$userId request")
+          _ <- logger.info(s"Received GET /bookings/user/$userId request")
           bookings <- bookingService.getBookingsByUserId(userId)
-          _ <- IO.println(s"Found bookings for user $userId: $bookings")
+          _ <- logger.info(s"Found bookings for user $userId: $bookings")
           response <- Ok(bookings.map(toBookingResponse).asJson)
         } yield response
 
@@ -274,9 +278,9 @@ object Controllers {
        */
       case req @ GET -> Root / "bookings" / "check" =>
         for {
-          _ <- IO.println("Received GET /bookings/check request")
+          _ <- logger.info("Received GET /bookings/check request")
           body <- req.as[CheckAvailabilityRequest]
-          _ <- IO.println(s"Request body: $body")
+          _ <- logger.info(s"Request body: $body")
           roomId = UUID.fromString(body.roomId)
           startTime = LocalDateTime.parse(body.startTime)
           endTime = LocalDateTime.parse(body.endTime)
